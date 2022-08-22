@@ -1,0 +1,322 @@
+import React from "react";
+import axios from 'axios'
+import Head from 'next/head'
+import Link from "next/link";
+import { useRouter } from 'next/router'
+import styles from '../styles/Home.module.css'
+import { GiThreeFriends } from 'react-icons/gi'
+import { AiFillHome } from 'react-icons/ai'
+import { CgProfile } from 'react-icons/cg'
+import { FaSignOutAlt, FaImage } from 'react-icons/fa'
+import { Text, Menu, MenuButton, Avatar, AvatarBadge, MenuList, MenuGroup, MenuItem, Spinner } from '@chakra-ui/react'
+import { Tabs, TabList, TabPanels, Tab, TabPanel, Box, Button } from '@chakra-ui/react'
+import {
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
+    Textarea
+} from '@chakra-ui/react'
+
+const profilePage = (props) => {
+
+    const router = useRouter();
+    const API_URL = "http://localhost:1997"
+    const [toggle, setToggle] = React.useState(false)
+    const [loading, setLoading] = React.useState(true)
+    const [dataUser, setDataUser] = React.useState('')
+    const [ownPost, setOwnPost] = React.useState([])
+    const [likePost, setLikePost] = React.useState([])
+    const [bio, setBio] = React.useState('')
+    const [fullname, setFullname] = React.useState('')
+    const [username, setUsername] = React.useState('')
+    const [profPict, setProfPict] = React.useState('')
+
+    let checkUsername = []
+    props.users.map((val) => checkUsername.push(val.username));
+    let index = ''
+    const onEditData = () => {
+        let formData = new FormData();
+        formData.append('data', JSON.stringify({
+            bio,
+            fullname,
+            username
+        }))
+        formData.append('profilepicture', profPict);
+        axios.patch(API_URL + `/users/edit?id=${dataUser.idusers}`, formData).then((response) => {
+            if (response.data.success) {
+                keepLogin();
+                toast({
+                    title: "Edit Success",
+                    description: ``,
+                    status: "success",
+                    duration: 3000,
+                    isClosable: true
+                })
+            }
+        }).catch((error) => {
+            console.log(error)
+        })
+    }
+
+    const keepLogin = () => {
+        let socmedLog = localStorage.getItem('socmedLog');
+        if (socmedLog != "null") {
+            axios.get(API_URL + `/users/keep`, {
+                headers: {
+                    'Authorization': `Bearer ${socmedLog}`
+                }
+            })
+                .then((res) => {
+                    console.log(res.data)
+                    if (res.data.idusers) {
+                        setLoading(false)
+                        setDataUser(res.data)
+                        setBio(res.data.bio)
+                        setUsername(res.data.username)
+                        setFullname(res.data.fullname)
+                        setProfPict(res.data.profilepicture)
+                        setOwnPost(res.data.posts)
+                        setLikePost(res.data.likes)
+                    }
+                }).catch((err) => {
+                    console.log(err);
+                })
+        } else if (socmedLog == "null") {
+            router.push({
+                pathname: '/login'
+            })
+        }
+    }
+
+    const printOwnPost = () => {
+        return ownPost.map((val, idx) => {
+            return <div className="card row">
+                <div className="d-flex col-12 m-3">
+                    <Avatar name={val.username}>
+                    </Avatar>
+                    <span className="fs-3 ms-5">{val.caption}</span>
+                </div>
+            </div>
+        })
+    }
+
+    const printLikePost = () => {
+        return likePost.map((val, idx) => {
+            return <div className="card row">
+                <div className="d-flex col-12 m-3">
+                    <Avatar name={val.username_post}>
+                    </Avatar>
+                    <span className="fs-3 ms-5">{val.caption}</span>
+                </div>
+            </div>
+        })
+    }
+
+    const handleLogout = () => {
+        let socmedLog = localStorage.getItem('socmedLog');
+        if (socmedLog) {
+            localStorage.setItem('socmedLog', null)
+            router.push({
+                pathname: '/'
+            })
+        }
+    }
+
+    React.useEffect(() => {
+        keepLogin()
+    }, []);
+
+
+    return <div>
+        {loading ?
+            <div className={styles.loading}>
+                <Spinner
+                    thickness='4px'
+                    speed='0.65s'
+                    emptyColor='gray.200'
+                    color='blue.500'
+                    size='xl'
+                />
+            </div> :
+            <div className={styles.container}>
+                <Head>
+                    <title>Profile</title>
+                    <meta name="description" content="Generated by create next app" />
+                    <link rel="icon" href="/favicon.ico" />
+                </Head>
+                <div className="container">
+                    <div className="row">
+                        <div className="col-3">
+                            <div className='d-flex'>
+                                <GiThreeFriends size={50} />
+                                <Menu>
+                                    <MenuButton>
+                                        <div className="d-flex ms-3">
+                                            <Avatar name={dataUser.username}>
+                                                <AvatarBadge boxSize='1em' bg='green.500' />
+                                            </Avatar>
+                                            <div className="row ">
+                                                <Text className="text-dark col-12 fw-bold" style={{ fontFamily: 'monospace' }}>{dataUser.fullname}</Text>
+                                                <Text className='text-dark col-12 fw-bold' style={{ fontFamily: 'monospace' }}>{dataUser.username}</Text>
+                                            </div>
+                                        </div>
+                                    </MenuButton>
+                                    <MenuList>
+                                        <MenuGroup>
+                                            <MenuItem onClick={handleLogout}>SignOut <FaSignOutAlt className="ms-3" /></MenuItem>
+                                        </MenuGroup>
+                                    </MenuList>
+                                </Menu>
+                            </div>
+                            <div className="d-flex" style={{ marginTop: 100 }}>
+                                <Link href='/timeline'>
+                                    <div className="d-flex rounded" type='button'>
+                                        <AiFillHome size={40} /><span className='fw-bold fs-2 text-dark' style={{ fontFamily: 'monospace' }}>Home </span>
+                                    </div>
+                                </Link>
+                            </div>
+                            <div className="d-flex mt-3">
+                                <Link href='/profile'>
+                                    <div className="d-flex rounded" type='button'>
+                                        <CgProfile size={40} /><span className='fw-bold fs-2 text-dark' style={{ fontFamily: 'monospace' }}>Profile </span>
+                                    </div>
+                                </Link>
+                            </div>
+                        </div>
+                        <div className="col-9 card">
+                            <div >
+                                <Box W='100%' overflow='hidden' className="text-center">
+                                    <Avatar name={dataUser.username} size='2xl' src={API_URL + dataUser.profilepicture} />
+                                </Box>
+                                <div className="row">
+                                    <div className="col-9">
+                                        <span>{dataUser.fullname}</span>
+                                        <br />
+                                        <span>@{dataUser.username}</span>
+                                        <br />
+                                        <span>{dataUser.email}</span>
+                                        <br />
+                                        <span>{dataUser.bio}</span>
+                                    </div>
+                                    <div className="col-3">
+                                        <Button onClick={() => setToggle(!toggle)}> Edit Profile </Button>
+                                        <Modal isOpen={toggle} onClose={() => setToggle(!toggle)} size='3xl'>
+                                            <ModalOverlay />
+                                            <ModalContent>
+                                                <ModalCloseButton />
+                                                <ModalHeader>Edit Profile</ModalHeader>
+                                                <ModalBody>
+                                                    <div>
+                                                        <div className="mt-5 mb-3">
+                                                            <label className="form-label fw-bold text-muted">Fullname</label>
+                                                            <input
+                                                                type="text"
+                                                                placeholder='example01'
+                                                                className='w-100 form-control'
+                                                                defaultValue={dataUser.fullname}
+                                                                onChange={(e) => setFullname(e.target.value)}
+                                                            >
+                                                            </input>
+
+                                                        </div>
+                                                        <div className="mt-5 mb-3">
+                                                            <label className="form-label fw-bold text-muted">Bio</label>
+                                                            <input
+                                                                type="text"
+                                                                placeholder='example01'
+                                                                className='w-100 form-control'
+                                                                defaultValue={dataUser.bio}
+                                                                onChange={(e) => setBio(e.target.value)}
+                                                            >
+                                                            </input>
+                                                        </div>
+                                                        <div className="mt-5 mb-3">
+                                                            <label className="form-label fw-bold text-muted">Username</label>
+                                                            <input
+                                                                type="text"
+                                                                placeholder='example01'
+                                                                className='w-100 form-control'
+                                                                defaultValue={dataUser.username}
+                                                                onChange={(e) => setUsername(e.target.value)}
+                                                            >
+                                                            </input>
+                                                            {username.length == 0 ? null :
+                                                                < div >
+                                                                    <div className="d-none">
+                                                                        {index = checkUsername.findIndex(val => val == dataUser.username)}
+                                                                        {checkUsername.splice(index, 1)}
+                                                                    </div>
+                                                                    {
+                                                                        checkUsername.includes(username.toLocaleLowerCase()) || username.length < 4 ?
+                                                                            <span style={{ color: 'red' }}>Can't use username</span>
+                                                                            :
+                                                                            <span style={{ color: 'green' }}>You can use username</span>
+                                                                    }
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                        <div className="mt-5 mb-3">
+                                                            <label className="form-label fw-bold text-muted">Profile Picture</label>
+                                                            <br />
+                                                            <label htmlFor="upload" className="shadow"><FaImage size={30} /></label>
+                                                            <input onChange={(e) => setProfPict(e.target.files[0])} type='File' id="upload"
+                                                                className="d-none" />
+                                                        </div>
+                                                    </div>
+                                                </ModalBody>
+                                                <ModalFooter>
+                                                    {
+                                                        ((!checkUsername.includes(username.toLocaleLowerCase()) || checkUsername.includes(dataUser.username.toLocaleLowerCase())) && username.length > 3)
+                                                            ? <button className='btn btn-success text-white' onClick={() => {
+                                                                onEditData()
+                                                                setToggle(!toggle);
+                                                            }}>Submit</button>
+                                                            :
+                                                            <button className='btn btn-success text-white' disabled>Submit</button>
+                                                    }
+                                                </ModalFooter>
+                                            </ModalContent>
+                                        </Modal>
+                                    </div>
+                                </div>
+                            </div>
+                            <Tabs>
+                                <TabList>
+                                    <Tab>Post</Tab>
+                                    <Tab>Likes</Tab>
+                                </TabList>
+                                <TabPanels>
+                                    <TabPanel>
+                                        {printOwnPost()}
+                                    </TabPanel>
+                                    <TabPanel>
+                                        {printLikePost()}
+                                    </TabPanel>
+                                </TabPanels>
+                            </Tabs>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div >
+}
+
+export const getStaticProps = async () => {
+    try {
+        let res = await axios.get('http://localhost:1997/users')
+        return {
+            props: {
+                users: res.data
+            }
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export default profilePage
