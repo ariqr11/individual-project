@@ -116,6 +116,15 @@
 }
 
 .loading {
+  padding-left: 40%;
+  padding-right: 25%;
+  padding-bottom: 25%;
+  padding-top: 25%;
   align-items: center;
-  height: 1000px;
+}
+
+.overflow {
+  overflow: auto;
+  overflow-x: hidden;
+  height: 530px;
 }
