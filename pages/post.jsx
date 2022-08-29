@@ -33,7 +33,6 @@ const detail = (props) => {
     const [comments, setComments] = React.useState([])
     const [commsKey, setCommsKey] = React.useState(1)
     const [seeComms, setSeeComms] = React.useState(5)
-    console.log(edit)
 
     let checkLike = []
     let angka2 = [props.detail.date.split('-')[2].split('T')[0], props.detail.date.split('-')[1], props.detail.date.split('-')[0]]
