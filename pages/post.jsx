@@ -134,7 +134,7 @@ const detail = (props) => {
     const handleComs = () => {
         setCommsKey(commsKey + 1)
         axios.post(API_URL + `/post/addComments`, {
-            user_id: props.detail.user_id,
+            user_id: dataUser.idusers,
             post_id: props.detail.idposting,
             coms
         }

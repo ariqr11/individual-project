@@ -363,7 +363,7 @@ const profilePage = (props) => {
                                                                 <Avatar name=" " bg='teal.300' color='black'>{300 - caption.length}</Avatar>
                                                                 <Button colorScheme='twitter' className='btn btn-success text-white ms-5' onClick={() => {
                                                                     onAddPost()
-                                                                    setToggle(!toggle);
+                                                                    setTogglePost(!togglePost);
                                                                 }}>Post</Button>
                                                             </div>
                                                             :
@@ -371,7 +371,7 @@ const profilePage = (props) => {
                                                                 <Avatar name=" " bg='red.300' color='black'>-{caption.length - 300}</Avatar>
                                                                 <Button colorScheme='twitter' className='btn btn-success text-white ms-5' onClick={() => {
                                                                     onAddPost()
-                                                                    setToggle(!toggle);
+                                                                    setTogglePost(!togglePost);
                                                                 }} disabled>Post</Button>
                                                             </div>
                                                         }
